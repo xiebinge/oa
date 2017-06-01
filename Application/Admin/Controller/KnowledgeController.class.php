@@ -19,7 +19,20 @@ class KnowledgeController extends CommonController
     //知识列表
     public function index()
     {
-        $ret = $this -> knowledgeModel -> getknowledge();
+        //缓存初始化
+        $config = [
+            'type'=>'memcache', //缓存的类型我们这里使用memcache缓存
+            'host'=>'127.0.0.1', //memcache 服务器地址
+            'port'=>'11211', //memcache 的端口号
+            'prefix'=>'',  //缓存前缀
+            'expire'=>3600*12  //缓存有效时间
+        ];
+        S($config);
+        $ret = S('ret');
+        if(empty($ret)){
+            $ret = $this -> knowledgeModel -> getknowledge();
+            $ret = S('ret',$ret);
+        }
         if(isset($ret['page'])&&isset($ret['list'])){
             $this -> assign('page',$ret['page']);
             $this -> assign('list',$ret['list']);
