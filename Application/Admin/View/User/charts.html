@@ -1,0 +1,83 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Highcharts Example</title>
+
+        <!--<script type="text/javascript" src="http://cdn.hcharts.cn/jquery/jquery-1.8.3.min.js"></script>-->
+        <script type="text/javascript" src="__ADMIN__/js/jquery.js"></script>
+        <style type="text/css">
+            ${demo.css}
+        </style>
+        <script type="text/javascript">
+            var data = {$data};
+            //console.log(data);
+            var bigArray = [];
+            $.each(data,function(k,v){
+                //console.log(k,v);
+                var smallArray = [v.dept_name, parseInt(v.count_people)];//后面一定要字符串转化为整数
+                //console.log(smallArray);
+                bigArray.push(smallArray);
+            });
+            console.log(bigArray);
+            $(function () {
+                $('#container').highcharts({
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: '各部门职员人数统计图表'
+                    },
+                    subtitle: {
+                        text: '数据来源: <a href="http://www.baidu.com">公司内部</a>'
+                    },
+                    xAxis: {
+                        type: 'category',
+                        labels: {
+                            rotation: -45,
+                            style: {
+                                fontSize: '13px',
+                                fontFamily: 'Verdana, sans-serif'
+                            }
+                        }
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: '各部门人数（个）'
+                        }
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        pointFormat: '部门人数: <b>{point.y} 个</b>'
+                    },
+                    series: [{
+                        name: '部门',
+                        data: bigArray,
+                        dataLabels: {
+                            enabled: true,
+                            rotation: 0,
+                            color: '#FFFFFF',
+                            align: 'center',
+                            format: '{point.y}', // one decimal
+                            y: 10, // 10 pixels down from the top
+                            style: {
+                                fontSize: '13px',
+                                fontFamily: 'Verdana, sans-serif'
+                            }
+                        }
+                    }]
+                });
+            });
+        </script>
+    </head>
+    <body>
+    <script src="__ADMIN__/js/highcharts.js"></script>
+    <script src="__ADMIN__/js/exporting.js"></script>
+
+    <div id="container" style="min-width: 300px; height: 400px; margin: 0 auto"></div>
+
+    </body>
+</html>

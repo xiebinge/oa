@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="__ADMIN__/css/base.css" />
+<link rel="stylesheet" href="__ADMIN__/css/info-reg.css" />
+<title>移动办公自动化系统</title>
+</head>
+
+<body>
+<div class="title"><h2>部门编辑</h2></div>
+<form action="__SELF__" method="POST" >
+<div class="main">
+    <p class="short-input ue-clear">
+    	<label>部门名称：</label>
+        <input type="text" name="name" value="{$oneDept.name}" placeholder="部门名称" />
+    </p>
+    <input type="hidden" name="id" value="{$oneDept['id']}">
+    <div class="short-input select ue-clear">
+    	<label>上级部门：</label>
+        <div class="select-wrap">
+        	<!-- <div class="select-title ue-clear"><span>平件</span><i class="icon"></i></div>
+            <ul class="select-list">
+            	<li>平件</li>
+                <li>保密</li>
+                <li>高级保密</li>
+            </ul> -->
+			 <select name="pid" style=" width: 262px; height: 32px;" class="select-title ue-clear"  id="">
+                     <option value="0">顶级部门</option>
+                     <volist name="dept" id="vo">
+                         <if condition="$oneDept['pid'] eq $vo['id']">
+                             <option  value="{$vo.id}" selected>{$vo.name}</option>
+                         <else/>
+                             <option  value="{$vo.id}">{$vo.level|str_repeat="--",###}{$vo.name}</option>
+                         </if>
+                     </volist>
+            </select>
+        </div>
+    </div>
+    <p class="short-input ue-clear">
+        <label>排序：</label>
+        <input type="text" name="sort" value="{$oneDept.sort}" placeholder="排序" />
+    </p>
+    <p class="short-input ue-clear">
+    	<label>添加时间：</label>
+        <input type="text" name="add_time" value="{$oneDept.add_time|date='Y-m-d',###}" onclick="laydate({istime: true, format: 'YYYY-MM-DD'})" />
+    </p>
+    <p class="short-input ue-clear">
+    	<label>备注：</label>
+        <textarea placeholder="请输入内容" name="intro">{$oneDept.intro}</textarea>
+    </p>
+</div>
+<div class="btn ue-clear">
+     <input type="submit" class="confirm" value="确定"/>
+<input type="reset" class="clear" value="清空内容"/>
+</div>
+</form>
+</body>
+<script type="text/javascript" src="__ADMIN__/js/jquery.js"></script>
+<script type="text/javascript" src="__ADMIN__/js/common.js"></script>
+<script type="text/javascript" src="__ADMIN__/js/WdatePicker.js"></script>
+<script type="text/javascript" src="__ADMIN__/laydate/laydate.js"></script>
+<script type="text/javascript">
+
+showRemind('input[type=text], textarea','placeholder');
+</script>
+</html>

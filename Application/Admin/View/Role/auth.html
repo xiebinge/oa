@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html charset='utf-8'>
+<head>
+    <title>权限分配</title>
+    <style>
+        .mydiv{margin-top: -10px;margin-left: 10px}
+
+        .mydiv ul{list-style:none; margin-bottom: 40px;font-size: 16px}
+        .mydiv ul li{list-style: none;  margin-bottom: 0px;  margin-left: 23px;}
+        .mydiv ul li input{height: 30px;width: 20px;margin-bottom: 6px;}
+        .mydiv ul li .name{margin-left: 20px;color: #0480be;float:left}
+    </style>
+</head>
+<body>
+<?php $ids=explode(',',$auth_ids)?>
+<div id="content">
+    <div class="mydiv">
+        <h2>给角色[<span style="color:#ff804a">{$role}</span>]分配权限: </h2>
+            <form action="__CONTROLLER__/edit_auth" method="post">
+                <input type="hidden" value="{$id}" name="role_id">
+                <div class="info">
+                    <volist name="level1" id="value">
+                        <if condition="$value['id'] neq 1">
+                            <ul>
+                                <input class="pmenu"    type="checkbox" name="ids[]"  value="{$value['id']}" <?php if(in_array($value['id'],$ids)){echo "checked='checked'";}?> style="height: 30px;width: 20px;margin-bottom: 6px;" ><span>{$value['name']}</span>
+                                <volist name="level2" id="vo">
+                                    <if condition="$vo['pid'] eq $value['id']">
+                                        <li><span class="name"><input name="ids[]"  class="smenu" <?php if(in_array($vo['id'],$ids)){echo "checked='checked'";}?>   value="{$vo['id']}" type="checkbox"  >{$vo['name']}</span></li>
+                                        <volist name="level3" id="v">
+                                            <if condition="$v['pid'] eq $vo['id']">
+                                                <li><span class="name"><input name="ids[]"  class="smenu" <?php if(in_array($v['id'],$ids)){echo "checked='checked'";}?>  value="{$v['id']}" type="checkbox"  >{$v['name']}</span></li>
+                                            </if>
+                                        </volist>
+                                    </if>
+                                </volist>
+                            </ul>
+                        </if>
+                    </volist>
+                    <hr/>
+                </div>
+                <input type="submit"  value="确定"/>
+                <input type="reset" name="chongzhi"  value="重置"/>
+            </form>
+    </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="__ADMIN__/js/jquery.js"></script>
+<script type="text/javascript">
+    //重置
+    $('input[name="chongzhi"]').click(function(){
+       $('input:checked').attr('checked',false);
+    });
+
+    //一级菜单
+    $('input[class="pmenu"]').bind('click',function(){
+        var me = this;
+        if($(me).attr('checked')){
+            $(me).parent().find('.smenu').attr('checked',true);
+        }else{
+            $(me).parent().find('.smenu').attr('checked',false);
+        }
+    });
+
+    //子级菜单(方法一)
+    /*$('.smenu').bind('click',function(){
+        var me = this;
+        var brother = $(me).parents('ul').find('.smenu');
+        var flag = false;
+        $.each(brother,function(){
+            if($(this).attr('checked')){
+                flag = true;
+            }
+        });
+
+        if(flag){
+            $(me).parents('ul').find(".pmenu").attr('checked',true);
+        }else{
+            $(me).parents('ul').find(".pmenu").attr('checked',false);
+        }
+    });*/
+
+    //子级菜单(方法二)
+    $('.smenu').bind('click',function(){
+        var me = this;
+        var brother = $(me).parents('ul').find('.smenu:checked').length;
+        if(brother){
+            $(me).parents('ul').find(".pmenu").attr('checked',true);
+        }else{
+            $(me).parents('ul').find(".pmenu").attr('checked',false);
+        }
+    });
+
+</script>
+
+</html>
+

@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="__ADMIN__/css/base.css" />
+<link rel="stylesheet" href="__ADMIN__/css/info-mgt.css" />
+<link rel="stylesheet" href="__ADMIN__/css/WdatePicker.css" />
+<title>移动办公自动化系统</title>
+</head>
+
+<body>
+<div class="title"><h2>收件箱</h2></div>
+<empty name="list">
+    <div class="">对不起，没有数据！</div>
+<else />
+    <div class="table-operate ue-clear">
+        <a href="javascript:;" class="add">添加</a>
+        <a href="javascript:;" class="del">删除</a>
+        <a href="javascript:;" class="edit">编辑</a>
+        <a href="javascript:;" class="count">统计</a>
+        <a href="javascript:;" class="check">审核</a>
+    </div>
+    <div class="table-box">
+    <table>
+        <thead>
+        <tr>
+            <th class="num">序号</th>
+            <th class="name">标题</th>
+            <th class="process">发件人</th>
+            <th class="node">正文</th>
+            <th class="node">附件下载</th>
+            <th class="node">状态</th>
+            <th class="time">发送时间时间<span>（小时）</span></th>
+            <th class="operate">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <volist name="list" id="vo">
+            <tr>
+                <td class="num">{$key+1}</td>
+                <td class="name">{$vo['title']}</td>
+                <td class="process">{$vo['sender']}</td>
+                <td class="node"><a href="javascript:void(0);" is_read="{$vo['is_read']}" check-id="{$vo.id}" class="check_content">查看</a></td>
+                <td class="node" >
+                    <if condition="$vo['file'] eq 0">
+                        无附件
+                    <else/>
+                        <a href="__CONTROLLER__/fileDownload?filename={$vo['file']}" >附件</a>
+                    </if>
+                </td>
+                <td class="node" id="email_read">
+                    <if condition="$vo['is_read'] eq 0">
+                        <a href="javascript:void(0);" class="isread" style="color: #ff0000">未读</a>
+                    <else/>
+                        <a href="javascript:void(0);" class="isread" style="color: green">已读</a>
+                    </if>
+                </td>
+                <td class="time">{$vo['send_time']|date="Y-m-d h:i:s",###}</td>
+                <td class="operate">
+                    <!--<a href="__CONTROLLER__/del/id/{$vo.id}" onclick="return confirm('确定要删除吗？')" >删除</a>-->
+                    <a href="javascript:void(0)" class="ajax-delete" file="{$vo['file']}" id="{$vo.id}" >删除</a>
+                </td>
+            </tr>
+        </volist>
+        </tbody>
+    </table>
+</div>
+</empty>
+<div class="pagination ue-clear" style="float: right">{$page}</div>
+</body>
+<script type="text/javascript" src="__ADMIN__/js/jquery.js"></script>
+<script type="text/javascript" src="__ADMIN__/js/common.js"></script>
+<script type="text/javascript" src="__ADMIN__/js/WdatePicker.js"></script>
+<script type="text/javascript" src="__ADMIN__/js/jquery.pagination.js"></script>
+<script type="text/javascript" src="__ADMIN__/js/cloud-zoom.1.0.2.min.js"></script>
+<script type="text/javascript" src="__ADMIN__/layer/layer.js"></script>
+<script type="text/javascript">
+//layer弹出层
+$('.check_content').bind('click',function(){
+    var me = this;
+    var id = $(me).attr('check-id');
+    var is_read = $(me).attr('is_read');
+    var index;
+    $.ajax({
+        url:"__CONTROLLER__/checkContent",
+        type:'post',
+        data:{id:id,is_read:is_read},
+        beforeSend:function(){
+            //loading层
+            index = layer.load(1, {
+                shade: [0.1,'#fff'] //0.1透明度的白色背景
+            });
+        },
+        success:function(data){
+            if(data.ret == 1){
+                $(me).parent().siblings('#email_read').empty().append('<a href="javascript:void(0);" class="isread" style="color: green">已读</a>');
+            }
+            layer.close(index);
+            if(data.code == 1){
+                layer.open({
+                    title: ['内容','text-align:center;'],
+                    type: 1,
+                    shade: [0.8, '#393D49'],//遮罩的透明度和颜色
+                    shadeClose:true, //点击遮罩关闭（点击灰色）
+                    skin: 'layui-layer-lan',//弹框的颜色和类型
+                    area: ['800px', '500px'], //宽高
+                    content: "<div style='padding: 30px'>"+data.msg+"</div>"
+                });
+            }else{
+                layer.msg(data.msg,{icon: 5});
+            }
+        },
+        error:function(data){
+            layer.close(index);
+            layer.msg('ajax未成功', {icon: 5});
+        }
+    });
+});
+
+//ajax无刷新删除
+$('.ajax-delete').bind('click',function(){
+    //var id = $(this).parent().siblings('.num').text();
+    var me = this;
+    var id = $(me).attr('id');
+    var file = $(me).attr('file');
+    if(confirm('确定要删除吗？')){
+        $.ajax({
+            type:'POST',
+            url:'__CONTROLLER__/ajaxDel',
+            data:{id:id,file:file},
+            dataType:'json',
+            success: function(data){
+                console.log(data);
+                if(data.code == 1){
+                    alert(data.msg);
+                    //删除当前行<tr>
+                    $(me).parents('tr').remove();
+                    //思路是 删除后我们是要把行里面的序号重新排列所以要先查看剩下的行数然后再循环这些行重新把序号赋予这些行
+                    //查看还剩下多少行
+                    var lines = $("tbody tr").length;
+                    if(lines > 0){
+                        //循环剩下的行
+                        $("tbody tr").each(function(k,v){
+                            //重新索引
+                            $(this).find("td:first-child").html(k+1);
+                        });
+                    }else{
+                       // $("body").empty().append('<div class="title"><h2>信息管理</h2></div> <div class="">对不起，没有数据！</div>');
+                        window.location.href="__CONTROLLER__/index";
+                    }
+
+                }else{
+                    alert(data.msg);
+                }
+            },
+            error:function(data){
+                alert('操作失败');
+            }
+        });
+    }
+});
+
+
+$(".select-title").on("click",function(){
+	$(".select-list").hide();
+	$(this).siblings($(".select-list")).show();
+	return false;
+})
+$(".select-list").on("click","li",function(){
+	var txt = $(this).text();
+	$(this).parent($(".select-list")).siblings($(".select-title")).find("span").text(txt);
+})
+
+
+$("tbody").find("tr:odd").css("backgroundColor","#eff6fa");
+
+
+
+showRemind('input[type=text], textarea','placeholder');
+</script>
+</html>
