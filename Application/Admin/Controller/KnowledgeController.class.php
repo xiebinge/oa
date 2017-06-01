@@ -19,10 +19,27 @@ class KnowledgeController extends CommonController
     //知识列表
     public function index()
     {
+        //用类似以下的方法可以实现缓存分布式存储
+        /*$memcache = new \Memcache();
+        $memcache -> addserver('127.1.0.1',11211);
+        $memcache -> addserver('192.168.123',11211);
+        $memcache -> addserver('192.168.124',11211);
+
+        $ret = $memcache -> get('ret'); //可以用S()方法获取缓存
+        if(empty($ret)){
+            $ret = $this -> knowledgeModel -> getknowledge();
+            $ret = $memcache -> set('ret',$ret,0,3600*12);
+        }
+        if(isset($ret['page'])&&isset($ret['list'])){
+            $this -> assign('page',$ret['page']);
+            $this -> assign('list',$ret['list']);
+        }
+        $this -> display();
+        */
         //缓存初始化
         $config = [
             'type'=>'memcache', //缓存的类型我们这里使用memcache缓存
-            'host'=>'127.0.0.1', //memcache 服务器地址
+            'host'=>'127.0.0.1', //memcache 服务器地址 在tp3.2版本中S方法不支持多台我们可以用addsever实现
             'port'=>'11211', //memcache 的端口号
             'prefix'=>'',  //缓存前缀
             'expire'=>3600*12  //缓存有效时间
